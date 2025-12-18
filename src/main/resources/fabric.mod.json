@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "thmtools",
+  "version": "${version}",
+
+  "name": "THMTools",
+  "description": "",
+  "authors": [],
+  "contact": {},
+
+  "license": "All-Rights-Reserved",
+  "icon": "assets/thmtools/icon.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "fabric-datagen": ["me.oneex.thmtools.client.THMtoolsDataGenerator"],
+    "client": ["me.oneex.thmtools.client.THMtoolsClient"],
+    "main": ["me.oneex.thmtools.THMtools"]
+  },
+
+  "mixins": [
+    "thmtools.mixins.json"
+    ,{
+      "config": "thmtools.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

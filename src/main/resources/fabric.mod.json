@@ -4,8 +4,8 @@
   "version": "${version}",
 
   "name": "THMTools",
-  "description": "",
-  "authors": [],
+  "description": "An THM addon for Meteor Client addons.",
+  "authors": ["1ex"],
   "contact": {},
 
   "license": "All-Rights-Reserved",
@@ -13,22 +13,24 @@
 
   "environment": "client",
   "entrypoints": {
-    "fabric-datagen": ["me.oneex.thmtools.client.THMtoolsDataGenerator"],
-    "client": ["me.oneex.thmtools.client.THMtoolsClient"],
-    "main": ["me.oneex.thmtools.THMtools"]
+    "meteor": [
+      "me.oneex.thmtools.THMTools"
+    ]
   },
-
   "mixins": [
     "thmtools.mixins.json"
-    ,{
-      "config": "thmtools.client.mixins.json",
-      "environment": "client"
-    }
   ],
-
+  "custom": {
+    "meteor-client:color": "225,25,25",
+    "modmenu": {
+      "parent": {
+        "id": "meteor-client"
+      }
+    }
+  },
   "depends": {
-    "fabricloader": ">=${loader_version}",
-    "fabric-api": "*",
-    "minecraft": "${minecraft_version}"
+    "java": ">=21",
+    "minecraft": ["${mc_version}"],
+    "meteor-client": "*"
   }
 }

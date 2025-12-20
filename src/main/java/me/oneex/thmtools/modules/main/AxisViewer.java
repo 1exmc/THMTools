@@ -90,6 +90,13 @@ public class AxisViewer extends Module {
             .build()
     );
 
+    private final Setting<Boolean> highwayCenterMode = sgNether.add(new BoolSetting.Builder()
+            .name("Draw True Center: ")
+            .description("This will move the axis line to the center of the middle block instead of the block edge.")
+            .defaultValue(false)
+            .build()
+    );
+
     // End
 
     private final Setting<AxisType> endAxisTypes = sgEnd.add(new EnumSetting.Builder<AxisType>()
@@ -204,133 +211,104 @@ public class AxisViewer extends Module {
 
         double renderY = y;
 
+        double centerOffset = highwayCenterMode.get() ? 0.5 : 0.0;
+
         // Render cardinal lines
         if (axisType.cardinals() || netherCardinalLocal) {
             // X axis
             drawSegmentedLine(event,
-                    new Vec3d(0, renderY, 0),
-                    new Vec3d(30_000_000, renderY, 0),
-                    lineColor
-            );
-            drawSegmentedLine(event,
-                    new Vec3d(0, renderY, 0),
-                    new Vec3d(-30_000_000, renderY, 0),
+                    new Vec3d(-30_000_000, renderY, centerOffset),
+                    new Vec3d( 30_000_000, renderY, centerOffset),
                     lineColor
             );
 
             // Z axis
             drawSegmentedLine(event,
-                    new Vec3d(0, renderY, 0),
-                    new Vec3d(0, renderY, 30_000_000),
-                    lineColor
-            );
-            drawSegmentedLine(event,
-                    new Vec3d(0, renderY, 0),
-                    new Vec3d(0, renderY, -30_000_000),
+                    new Vec3d(centerOffset, renderY, -30_000_000),
+                    new Vec3d(centerOffset, renderY,  30_000_000),
                     lineColor
             );
         }
 
-        // Render diagonal lines
         if (axisType.diagonals() || netherDiagonalLocal) {
-            // x = z
+            // Diagonal 1: x = z
             drawSegmentedLine(event,
-                    new Vec3d(-30_000_000, renderY, -30_000_000),
-                    new Vec3d( 30_000_000, renderY,  30_000_000),
+                    new Vec3d(-30_000_000 + centerOffset, renderY, -30_000_000 + centerOffset),
+                    new Vec3d( 30_000_000 + centerOffset, renderY,  30_000_000 + centerOffset),
                     lineColor
             );
 
-            // x = -z
-            drawSegmentedLine(event,
-                    new Vec3d(-30_000_000, renderY,  30_000_000),
-                    new Vec3d( 30_000_000, renderY, -30_000_000),
-                    lineColor
-            );
+            // Diagonal 2:
+            if (!highwayCenterMode.get()) {
+                drawSegmentedLine(event,
+                        new Vec3d(-30_000_000, renderY,  30_000_000),
+                        new Vec3d( 30_000_000, renderY, -30_000_000),
+                        lineColor
+                );
+            } else {
+                drawSegmentedLine(event,
+                        new Vec3d(-30_000_000, renderY,  30_000_000 + 1),
+                        new Vec3d( 30_000_000, renderY, -30_000_000 + 1),
+                        lineColor
+                );
+            }
         }
 
         // Render ring lines
         if (PlayerUtils.getDimension() == Dimension.Nether && netherRingLocal) {
             for (int r : RING_ROADS) {
-                drawRing(event, renderY, r, lineColor);
+                drawRing(event, renderY, r, centerOffset, lineColor);
             }
         }
 
         // Render diamond lines
         if (PlayerUtils.getDimension() == Dimension.Nether && netherDiamondLocal) {
             for (int d : DIAMONDS) {
-                drawDiamond(event, renderY, d, lineColor);
+                drawDiamond(event, renderY, d, centerOffset, lineColor);
             }
         }
     }
 
-    private void drawRing(Render3DEvent event, double y, int r, Color color) {
+    private void drawRing(Render3DEvent event, double y, double r, double centerOffset, Color color) {
+        double left   = -r + centerOffset;
+        double right  =  r + centerOffset;
+        double bottom = -r + centerOffset;
+        double top    =  r + centerOffset;
+
         // bottom
-        drawSegmentedLine(event,
-                new Vec3d(-r, y, -r),
-                new Vec3d(r,  y, -r),
-                color
-        );
-
+        drawSegmentedLine(event, new Vec3d(left, y, bottom), new Vec3d(right, y, bottom), color);
         // top
-        drawSegmentedLine(event,
-                new Vec3d(-r, y, r),
-                new Vec3d(r,  y, r),
-                color
-        );
-
+        drawSegmentedLine(event, new Vec3d(left, y, top), new Vec3d(right, y, top), color);
         // left
-        drawSegmentedLine(event,
-                new Vec3d(-r, y, -r),
-                new Vec3d(-r, y, r),
-                color
-        );
-
+        drawSegmentedLine(event, new Vec3d(left, y, bottom), new Vec3d(left,  y, top), color);
         // right
-        drawSegmentedLine(event,
-                new Vec3d(r, y, -r),
-                new Vec3d(r, y, r),
-                color
-        );
+        drawSegmentedLine(event, new Vec3d(right,y, bottom), new Vec3d(right, y, top), color);
     }
 
-    private boolean shouldRenderRing(Vec3d cam, int r, double maxDistSq) {
-        double dx = Math.max(Math.abs(cam.x) - r, 0);
-        double dz = Math.max(Math.abs(cam.z) - r, 0);
-        return dx * dx + dz * dz <= maxDistSq;
-    }
-
-    private void drawDiamond(Render3DEvent event, double y, int d, Color color) {
+    private void drawDiamond(Render3DEvent event, double y, int d, double centerOffset, Color color) {
         drawSegmentedLine(event,
-                new Vec3d( d, y,  0),
-                new Vec3d( 0, y,  d),
+                new Vec3d( d + centerOffset, y,  0 + centerOffset),
+                new Vec3d( 0 + centerOffset, y,  d + centerOffset),
                 color
         );
 
         drawSegmentedLine(event,
-                new Vec3d( 0, y,  d),
-                new Vec3d(-d, y,  0),
+                new Vec3d( 0 + centerOffset, y,  d + centerOffset),
+                new Vec3d(-d + centerOffset, y,  0 + centerOffset),
                 color
         );
 
         drawSegmentedLine(event,
-                new Vec3d(-d, y,  0),
-                new Vec3d( 0, y, -d),
+                new Vec3d(-d + centerOffset, y,  0 + centerOffset),
+                new Vec3d( 0 + centerOffset, y, -d + centerOffset),
                 color
         );
 
         drawSegmentedLine(event,
-                new Vec3d( 0, y, -d),
-                new Vec3d( d, y,  0),
+                new Vec3d( 0 + centerOffset, y, -d + centerOffset),
+                new Vec3d( d + centerOffset, y,  0 + centerOffset),
                 color
         );
-    }
-
-    private boolean shouldRenderDiamond(Vec3d cam, int d, double maxDistSq) {
-        double u = Math.abs(cam.x + cam.z);
-        double v = Math.abs(cam.x - cam.z);
-        double du = Math.max(u - d, 0);
-        double dv = Math.max(v - d, 0);
-        return du * du + dv * dv <= maxDistSq;
     }
 
     private void drawSegmentedLine(Render3DEvent event, Vec3d start, Vec3d end, Color color) {

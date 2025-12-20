@@ -96,7 +96,7 @@ public class THMSystem extends System<THMSystem> {
     public NbtCompound toTag() {
         NbtCompound tag = new NbtCompound();
 
-        tag.putString("version", "TODO CHANGE");
+        tag.putString("version", THMTools.VERSION);
         tag.put("settings", settings.toTag());
 
         return tag;

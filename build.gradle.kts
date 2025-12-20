@@ -27,6 +27,9 @@ dependencies {
 
     // Meteor
     modImplementation(libs.meteor.client)
+
+    // Util
+    implementation("it.unimi.dsi:fastutil:8.5.18")
 }
 
 tasks {

@@ -21,6 +21,7 @@ import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.combat.KillAura;
 import meteordevelopment.meteorclient.systems.modules.player.*;
+import meteordevelopment.meteorclient.systems.modules.render.FreeLook;
 import meteordevelopment.meteorclient.utils.Utils;
 import meteordevelopment.meteorclient.utils.entity.SortPriority;
 import meteordevelopment.meteorclient.utils.entity.TargetUtils;
@@ -195,6 +196,13 @@ public class THMHighway extends Module {
             .name("destroy-crystal-traps")
             .description("Use a bow to defuse crystal traps safely from a distance. An infinity bow is recommended.")
             .defaultValue(true)
+            .build()
+    );
+
+    private final Setting<Boolean> toggleFreeLook = sgGeneral.add(new BoolSetting.Builder()
+            .name("toggle-FreeLook")
+            .description("Toggles FreeLook while Highway module is running.")
+            .defaultValue(false)
             .build()
     );
 
@@ -515,6 +523,14 @@ public class THMHighway extends Module {
         startTimeNs = System.nanoTime();
         startInstant = Instant.now();
 
+        // Enable FreeLook
+        if (toggleFreeLook.get()){
+            Module m = Modules.get().get(FreeLook.class);
+            if (m != null && !m.isActive()) {
+                m.toggle();
+            }
+        }
+
         restockTask.complete();
 
         if (blocksPerTick.get() > 1 && rotation.get().mine) warning("With rotations enabled, you can break at most 1 block per tick.");
@@ -534,6 +550,14 @@ public class THMHighway extends Module {
 
         endTimeNs = System.nanoTime();
         endInstant = Instant.now();
+
+        // Disable FreeLook
+        if (toggleFreeLook.get()){
+            Module m = Modules.get().get(FreeLook.class);
+            if (m != null && m.isActive()) {
+                m.toggle();
+            }
+        }
 
         blocksTotal = blocksBroken + blocksPlaced;
         elapsedNs = endTimeNs - startTimeNs;
